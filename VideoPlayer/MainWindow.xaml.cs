@@ -24,5 +24,16 @@ namespace VideoPlayer
         {
             InitializeComponent();
         }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.F5:
+                    mediaElement.Source = null;
+                    mediaElement.Source = new Uri(@"d:\Яндекс диск\Театр\ЖЭ-ПП-17\Титры\07 - Макбет.mov");
+                    break;
+            }
+        }
     }
 }

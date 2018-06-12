@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VideoPlayer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="350" Width="525" KeyDown="Window_KeyDown" Background="Black" WindowStyle="None" ResizeMode="NoResize" WindowState="Maximized">
     <Grid>
-        
+        <MediaElement x:Name="mediaElement" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" Grid.Column="4" MinWidth="100" MinHeight="100"/>
+
     </Grid>
 </Window>
