@@ -1,17 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace VideoPlayer
 {
@@ -20,20 +11,80 @@ namespace VideoPlayer
     /// </summary>
     public partial class MainWindow : Window
     {
+        SQLite.SQLiteConfig Config;
+        MediaStatus PlayStatus = MediaStatus.Stop;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            Config = new SQLite.SQLiteConfig("config.db");
+            IdleImage.Source = new BitmapImage(new Uri(Config.GetConfigValue("stop_image")));
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.Key)
             {
+                case Key.PageUp:
+                    RunVideo(1);
+                    break;
+                case Key.PageDown:
+                    RunVideo(2);
+                    break;
+                case Key.F9:
+                    RunVideo(3);
+                    break;
                 case Key.F5:
-                    mediaElement.Source = null;
-                    mediaElement.Source = new Uri(@"d:\Яндекс диск\Театр\ЖЭ-ПП-17\Титры\07 - Макбет.mov");
+                    switch (PlayStatus)
+                    {
+                        case MediaStatus.Play:
+                            mediaElement.Pause();
+                            PlayStatus = MediaStatus.Pause;
+                            break;
+                        case MediaStatus.Pause:
+                            mediaElement.Play();
+                            PlayStatus = MediaStatus.Play;
+                            break;
+                        case MediaStatus.Stop:
+                            break;
+                    }
                     break;
             }
         }
+
+        private void RunVideo(int Number)
+        {
+            DoubleAnimation ImageOpacityAnimation = new DoubleAnimation
+            {
+                From = ImageGrid.Opacity,
+                To = 0,
+                Duration = TimeSpan.FromMilliseconds(500)
+            };
+            ImageGrid.BeginAnimation(OpacityProperty, ImageOpacityAnimation);
+            mediaElement.Source = null;
+            mediaElement.Source = new Uri(Config.GetConfigValue("video_" + Number.ToString()));
+            mediaElement.Play();
+            PlayStatus = MediaStatus.Play;
+        }
+
+        private void mediaElement_MediaEnded(object sender, RoutedEventArgs e)
+        {
+            PlayStatus = MediaStatus.Stop;
+            DoubleAnimation ImageOpacityAnimation = new DoubleAnimation
+            {
+                From = ImageGrid.Opacity,
+                To = 1,
+                Duration = TimeSpan.FromMilliseconds(500)
+            };
+            ImageGrid.BeginAnimation(OpacityProperty, ImageOpacityAnimation);
+        }
+    }
+
+    enum MediaStatus : byte
+    {
+        Stop,
+        Play,
+        Pause
     }
 }
