@@ -13,5 +13,8 @@
         <Grid x:Name="ImageGrid">
             <Image x:Name="IdleImage"/>
         </Grid>
+        <Grid x:Name="WarningGrid" Opacity="0">
+            <Image x:Name="WarningImage" Stretch="None"/>
+        </Grid>
     </Grid>
 </Window>

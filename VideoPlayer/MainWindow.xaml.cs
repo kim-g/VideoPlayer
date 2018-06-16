@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
@@ -20,6 +22,7 @@ namespace VideoPlayer
 
             Config = new SQLite.SQLiteConfig("config.db");
             IdleImage.Source = new BitmapImage(new Uri(Config.GetConfigValue("stop_image")));
+            WarningImage.Source = new BitmapImage(new Uri(Config.GetConfigValue("warning_image")));
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
@@ -32,10 +35,10 @@ namespace VideoPlayer
                 case Key.PageDown:
                     RunVideo(2);
                     break;
-                case Key.F9:
+                case Key.F5:
                     RunVideo(3);
                     break;
-                case Key.F5:
+                case Key.OemPeriod:
                     switch (PlayStatus)
                     {
                         case MediaStatus.Play:
@@ -55,13 +58,27 @@ namespace VideoPlayer
 
         private void RunVideo(int Number)
         {
-            DoubleAnimation ImageOpacityAnimation = new DoubleAnimation
+            switch (PlayStatus)
             {
-                From = ImageGrid.Opacity,
-                To = 0,
-                Duration = TimeSpan.FromMilliseconds(500)
-            };
-            ImageGrid.BeginAnimation(OpacityProperty, ImageOpacityAnimation);
+                case MediaStatus.Play:
+                    return;
+                case MediaStatus.Pause:
+                    if (WarningGrid.Opacity > 0)
+                    {
+                        WarningGrid.BeginAnimation(OpacityProperty, OpacityAnimation(WarningGrid.Opacity, 0, 10));
+                    }
+                    else
+                    {
+                        WarningGrid.BeginAnimation(OpacityProperty, OpacityAnimation(WarningGrid.Opacity, 1, 10));
+                        WarningMessage();
+                        return;
+                    }
+                    break;
+                case MediaStatus.Stop:
+                    ImageGrid.BeginAnimation(OpacityProperty, OpacityAnimation(ImageGrid.Opacity, 0, 500));
+                    break;
+            }
+
             mediaElement.Source = null;
             mediaElement.Source = new Uri(Config.GetConfigValue("video_" + Number.ToString()));
             mediaElement.Play();
@@ -71,13 +88,28 @@ namespace VideoPlayer
         private void mediaElement_MediaEnded(object sender, RoutedEventArgs e)
         {
             PlayStatus = MediaStatus.Stop;
-            DoubleAnimation ImageOpacityAnimation = new DoubleAnimation
+            ImageGrid.BeginAnimation(OpacityProperty, OpacityAnimation(ImageGrid.Opacity, 1, 500));
+        }
+
+        private async Task WarningMessage()
+        {
+            
+            await Task.Delay(3000);
+
+            if (WarningGrid.Opacity == 1)
             {
-                From = ImageGrid.Opacity,
-                To = 1,
-                Duration = TimeSpan.FromMilliseconds(500)
+                WarningGrid.BeginAnimation(OpacityProperty, OpacityAnimation(WarningGrid.Opacity, 0, 500));
+            }
+        }
+
+        private DoubleAnimation OpacityAnimation(double From, double To, int Time)
+        {
+            return new DoubleAnimation
+            {
+                From = From,
+                To = To,
+                Duration = TimeSpan.FromMilliseconds(Time)
             };
-            ImageGrid.BeginAnimation(OpacityProperty, ImageOpacityAnimation);
         }
     }
 
