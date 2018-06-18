@@ -9,6 +9,7 @@
     <Grid>
         <Grid x:Name="MediaGrid">
             <MediaElement x:Name="mediaElement" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" Grid.Column="4" MinWidth="100" MinHeight="100" MediaEnded="mediaElement_MediaEnded" LoadedBehavior="Manual"/>
+            <Label x:Name="DebugLabel" Background="Black" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Debug Label"/>
         </Grid>
         <Grid x:Name="ImageGrid">
             <Image x:Name="IdleImage"/>

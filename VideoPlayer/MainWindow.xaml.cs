@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace VideoPlayer
 {
@@ -15,6 +17,7 @@ namespace VideoPlayer
     {
         SQLite.SQLiteConfig Config;
         MediaStatus PlayStatus = MediaStatus.Stop;
+        List<string> StopList = new List<string>();
 
         public MainWindow()
         {
@@ -23,21 +26,59 @@ namespace VideoPlayer
             Config = new SQLite.SQLiteConfig("config.db");
             IdleImage.Source = new BitmapImage(new Uri(Config.GetConfigValue("stop_image")));
             WarningImage.Source = new BitmapImage(new Uri(Config.GetConfigValue("warning_image")));
+
+            DispatcherTimer CheckTime = new DispatcherTimer();
+            CheckTime.Tick += CheckTimeTick;
+            CheckTime.Interval = TimeSpan.FromMilliseconds(50);
+            CheckTime.Start();
+        }
+
+        private void CheckTimeTick(object sender, EventArgs e)
+        {
+            if (PlayStatus == MediaStatus.Play)
+            {
+                string CurTime = mediaElement.Position.Hours.ToString() + ":" +
+                    mediaElement.Position.Minutes.ToString() + ":" +
+                    mediaElement.Position.Seconds.ToString() + "." +
+                    mediaElement.Position.Milliseconds.ToString();
+
+                DebugLabel.Content = CurTime;
+
+                foreach (string Stop in StopList)
+                {
+                    if (CurTime.Contains(Stop))
+                    {
+                        mediaElement.Pause();
+                        PlayStatus = MediaStatus.Pause;
+                        StopList.Remove(Stop);
+                        return;
+                    }
+
+                }
+            }
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.Key)
             {
+                case Key.D1:
+                case Key.NumPad1:
                 case Key.PageUp:
                     RunVideo(1);
                     break;
+                case Key.D2:
+                case Key.NumPad2:
                 case Key.PageDown:
                     RunVideo(2);
                     break;
+                case Key.D3:
+                case Key.NumPad3:
                 case Key.F5:
                     RunVideo(3);
                     break;
+                case Key.Space:
+                case Key.F9:
                 case Key.OemPeriod:
                     switch (PlayStatus)
                     {
@@ -81,6 +122,9 @@ namespace VideoPlayer
 
             mediaElement.Source = null;
             mediaElement.Source = new Uri(Config.GetConfigValue("video_" + Number.ToString()));
+
+            StopList = Config.GetStringList("video_" + Number.ToString() + "_stop");
+
             mediaElement.Play();
             PlayStatus = MediaStatus.Play;
         }

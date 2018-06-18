@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
 using System.Drawing;
@@ -196,6 +197,11 @@ namespace SQLite
 
         //Работа с конфигом, получение значения
 
+        /// <summary>
+        /// Получает текстовый параметр из БД
+        /// </summary>
+        /// <param name="name">Имя параметра</param>
+        /// <returns></returns>
         public string GetConfigValue(string name)
         {
             DataTable Conf = ReadTable("SELECT `value` FROM `config` WHERE `name`='" + name + "' LIMIT 1");
@@ -203,6 +209,11 @@ namespace SQLite
             return Conf.Rows[0].ItemArray[0].ToString();
         }
 
+        /// <summary>
+        /// Получает числовой параметр из БД
+        /// </summary>
+        /// <param name="name">Имя параметра</param>
+        /// <returns></returns>
         public int GetConfigValueInt(string name)
         {
             DataTable Conf = ReadTable("SELECT `value` FROM `config` WHERE `name`='" + name + "' LIMIT 1");
@@ -210,6 +221,11 @@ namespace SQLite
             return Convert.ToInt32(Conf.Rows[0].ItemArray[0].ToString());
         }
 
+        /// <summary>
+        /// Получает бинарный параметр из БД
+        /// </summary>
+        /// <param name="name">Имя параметра</param>
+        /// <returns></returns>
         public bool GetConfigValueBool(string name)
         {
             DataTable Conf = ReadTable("SELECT `value` FROM `config` WHERE `name`='" + name + "' LIMIT 1");
@@ -217,9 +233,50 @@ namespace SQLite
             return Conf.Rows[0].ItemArray[0].ToString() == "1";
         }
 
+        /// <summary>
+        /// Возвращает список строковых параметров с одинаковым именем
+        /// </summary>
+        /// <param name="name">Имя элементов списка</param>
+        /// <returns></returns>
+        public List<string> GetStringList(string name)
+        {
+            List<string> Out = new List<string>();
+            DataTable Conf = ReadTable("SELECT `value` FROM `config` WHERE `name`='" + name + "';");
+
+            foreach (DataRow Row in Conf.Rows)
+            {
+                Out.Add(Row.ItemArray[0].ToString());
+            }
+            return Out;
+        }
+
+        /// <summary>
+        /// Возвращает список численных параметров с одинаковым именем
+        /// </summary>
+        /// <param name="name">Имя элементов списка</param>
+        /// <returns></returns>
+        public List<int> GetIntList(string name)
+        {
+            List<int> Out = new List<int>();
+            DataTable Conf = ReadTable("SELECT `value` FROM `config` WHERE `name`='" + name + "';");
+
+            foreach (DataRow Row in Conf.Rows)
+            {
+                Out.Add(Convert.ToInt32(Row.ItemArray[0].ToString()));
+            }
+            return Out;
+        }
+
+
 
         //Работа с конфигом, установка значения
 
+        /// <summary>
+        /// Устанавливает параметр БД
+        /// </summary>
+        /// <param name="name">Название параметра</param>
+        /// <param name="value">Строковае значение</param>
+        /// <returns></returns>
         public bool SetConfigValue(string name, string value)
         {
             if (GetCount("config", "`name`='" + name + "'") > 0)
@@ -228,6 +285,12 @@ namespace SQLite
                 return Execute("INSERT INTO `config` (`name`, `value`) VALUES ('" + name + "','" + value + "');");
         }
 
+        /// <summary>
+        /// Устанавливает параметр БД
+        /// </summary>
+        /// <param name="name">Название параметра</param>
+        /// <param name="value">Численное значение</param>
+        /// <returns></returns>
         public bool SetConfigValue(string name, int value)
         {
             if (GetCount("config", "`name`='" + name + "'") > 0)
@@ -236,6 +299,12 @@ namespace SQLite
                 return Execute("INSERT INTO `config` (`name`, `value`) VALUES ('" + name + "','" + value.ToString() + "');");
         }
 
+        /// <summary>
+        /// Устанавливает параметр БД
+        /// </summary>
+        /// <param name="name">Название параметра</param>
+        /// <param name="value">Бинарное значение</param>
+        /// <returns></returns>
         public bool SetConfigValue(string name, bool value)
         {
             string val = value ? "1" : "0";
