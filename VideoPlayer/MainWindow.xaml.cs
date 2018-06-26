@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -24,8 +25,9 @@ namespace VideoPlayer
             InitializeComponent();
 
             Config = new SQLite.SQLiteConfig("config.db");
-            IdleImage.Source = new BitmapImage(new Uri(Config.GetConfigValue("stop_image")));
-            WarningImage.Source = new BitmapImage(new Uri(Config.GetConfigValue("warning_image")));
+            IdleImage.Source = new BitmapImage(new Uri(Path.GetFullPath(Config.GetConfigValue("stop_image"))));
+            WarningImage.Source = new BitmapImage(
+                new Uri(Path.GetFullPath(Config.GetConfigValue("warning_image"))));
 
             DispatcherTimer CheckTime = new DispatcherTimer();
             CheckTime.Tick += CheckTimeTick;
@@ -121,7 +123,7 @@ namespace VideoPlayer
             }
 
             mediaElement.Source = null;
-            mediaElement.Source = new Uri(Config.GetConfigValue("video_" + Number.ToString()));
+            mediaElement.Source = new Uri(Path.GetFullPath(Config.GetConfigValue("video_" + Number.ToString())));
 
             StopList = Config.GetStringList("video_" + Number.ToString() + "_stop");
 
